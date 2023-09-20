@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@routes/*": ["./routes/*"],
+      "@db/*": ["./db/*"],
+      "@services/*": ["./services/*"],
+    },
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,  
+  },
+  // "include": ["src/**/*"]
+}
