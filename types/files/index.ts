@@ -5,4 +5,5 @@ export interface IFileType {
   mimetype: string
   buffer: any
   size: number
+  path: string
 }

@@ -24,6 +24,7 @@
   "_moduleAliases": {
     "@routes": "./routes",
     "@db": "./db",
-    "@services": "./services"
+    "@services": "./services",
+    "@models": "./models"
   }
 }

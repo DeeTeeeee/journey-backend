@@ -2,35 +2,37 @@ import express from 'express'
 import 'module-alias/register'
 import {Request, Response} from 'express'
 // import {s3Upload} from './s3Service'
-// import mongoose, {ConnectOptions} from 'mongoose'
-import JourneyRouter from '@routes/journey'
+import JourneyRouter from '@routes/travelTrip'
 import {initDatabase} from '@db/index'
+import UploadRouter from '@routes/upload'
+import GeneralInformationRouter from '@routes/generalInformation'
 
 require('dotenv').config()
 
-// const db = mongoose.connection
 const app = express()
 const port = process.env.PORT
-
-// mongoose.connect(
-//   process.env.DATABASE_URL as string,
-//   {useNewUrlParser: true, dbName: process.env.DATABASE_NAME} as ConnectOptions,
-// )
-
-// db.on('error', (error: any) => error)
-// db.once('open', () => console.log('Database is connected'))
 
 // const multer = require('multer')
 initDatabase()
 
+const allowCrossDomain = function(req: Request, res: Response, next: () => void) {
+  res.header('Access-Control-Allow-Origin', "*");
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+}
+app.use(allowCrossDomain)
 app.use(express.json())
-app.use('/api', JourneyRouter)
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!')
 })
 app.listen(port, () => {
   console.log(`Listening on port ${port}`)
 })
+
+app.use('/api', JourneyRouter)
+app.use('/api', UploadRouter)
+app.use('/api', GeneralInformationRouter)
 
 // const storage = multer.memoryStorage()
 

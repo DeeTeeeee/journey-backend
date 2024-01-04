@@ -5,6 +5,8 @@
       "@routes/*": ["./routes/*"],
       "@db/*": ["./db/*"],
       "@services/*": ["./services/*"],
+      "@models/*": ["./models/*"],
+      "@multer/*": ["./multer/*"],
     },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,  
