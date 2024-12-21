@@ -1,57 +1,57 @@
-import express from 'express'
-import 'module-alias/register'
-import {Request, Response} from 'express'
-// import {s3Upload} from './s3Service'
-import JourneyRouter from '@routes/travelTrip'
-import {initDatabase} from '@db/index'
-import UploadRouter from '@routes/upload'
-import GeneralInformationRouter from '@routes/generalInformation'
+import * as fs from "fs";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
 
-require('dotenv').config()
+function replaceWordContent(inputFilePath: string, outputFilePath: string, oldText: string, newText: string): void {
+    try {
+        // Đọc file dưới dạng nhị phân
+        if (!fs.existsSync(inputFilePath)) {
+            throw new Error("File đầu vào không tồn tại!");
+        }
 
-const app = express()
-const port = process.env.PORT
+        const content = fs.readFileSync(inputFilePath, "binary");
 
-// const multer = require('multer')
-initDatabase()
+        // Kiểm tra file có phải định dạng ZIP không
+        try {
+            const zip = new PizZip(content);
 
-const allowCrossDomain = function(req: Request, res: Response, next: () => void) {
-  res.header('Access-Control-Allow-Origin', "*");
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  next();
+            // Tải file vào Docxtemplater
+            const doc = new Docxtemplater(zip, {
+                paragraphLoop: true,
+                linebreaks: true,
+            });
+
+            // Thay thế nội dung
+            const text = doc.getFullText();
+            if (!text.includes(oldText)) {
+                console.log("Không tìm thấy nội dung cần thay thế!");
+                return;
+            }
+
+            const updatedText = text.replace(new RegExp(oldText, "g"), newText);
+            doc.loadZip(new PizZip(updatedText));
+
+            // Ghi lại file đã thay đổi
+            const buffer = doc.getZip().generate({ type: "nodebuffer" });
+            fs.writeFileSync(outputFilePath, buffer);
+
+            console.log("Nội dung đã được thay đổi và lưu tại:", outputFilePath);
+        } catch (zipError) {
+          console.log('zipError', zipError);
+          throw new Error("File không phải là định dạng .docx hợp lệ!");
+        }
+    } catch (error) {
+        console.error("Đã xảy ra lỗi:", error.message);
+    }
 }
-app.use(allowCrossDomain)
-app.use(express.json())
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!')
-})
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
-})
 
-app.use('/api', JourneyRouter)
-app.use('/api', UploadRouter)
-app.use('/api', GeneralInformationRouter)
+// Sử dụng hàm
+const inputPath = "/Users/DeeTee/workspace/journey-backend/files/test.docx";
+const outputPath = "/Users/DeeTee/workspace/journey-backend/new-files/HDNT _SMF&DKQUANGCANH#1525.docx";
 
-// const storage = multer.memoryStorage()
-
-// const fileFilter = (req: Request, file: any, cb: any) => {
-//   if (file.mimetype.split('/')[0] === 'image') {
-//     cb(null, true)
-//   } else {
-//     cb(new multer.MulterError('abc'), false)
-//   }
-// }
-
-// const upload = multer({
-//   storage,
-//   fileFilter,
-//   limits: {fileSize: 1000000, files: 2},
-// })
-
-// app.post('/upload', upload.array('files'), async (req: any, res: Response) => {
-//   const file = req.files?.[0]
-//   const result = await s3Upload(file)
-//   res.json({status: 'Success', result})
-// })
+replaceWordContent(
+    inputPath,
+    outputPath,
+    "CÔNG TY TNHH MỘT THÀNH VIÊN NGUYÊN VẬT LIỆU SMALLFORTUNE",
+    "CÔNG TY TNHH BẤT ĐỘNG SẢN SẢN XUẤT DỊCH VỤ HƯNG LONG PHÁT"
+);
